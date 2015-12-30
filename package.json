@@ -1,0 +1,11 @@
+{
+  "name": "nodebb-plugin-dice",
+  "version": "1.0.0",
+  "description": "A NodeBB plugin that allows users to roll dice.",
+  "main": "dice.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "david@jensen47.com",
+  "license": "Apache-2.0"
+}
