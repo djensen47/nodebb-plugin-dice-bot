@@ -1,0 +1,14 @@
+{
+  "id": "nodebb-plugin-dice",
+  "name": "Dice",
+  "Description": "NodeBB Plugin that allows users to roll dice. Dice results are posted as a reply in the topic from a specific, predetermined account.",
+  "url": "",
+  "library": "src/dice.js",
+  "less": [
+    "static/style.less"
+  ],
+  "languages": "languages",
+  "hooks": [
+    { "hook": "action:post.save", "method": "postDice" }
+  ]
+}
