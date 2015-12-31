@@ -1,5 +1,5 @@
 {
-  "name": "nodebb-plugin-dice",
+  "name": "nodebb-plugin-dice-bot",
   "version": "1.0.0",
   "description": "A NodeBB plugin that allows users to roll dice.",
   "main": "dice.js",
