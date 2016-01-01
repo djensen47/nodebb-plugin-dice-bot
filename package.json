@@ -7,5 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "david@jensen47.com",
-  "license": "Apache-2.0"
+  "license": "Apache-2.0",
+  "nbbpm": {
+    "compatibility": "^0.9.0"
+  }
 }
