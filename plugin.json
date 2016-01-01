@@ -5,7 +5,7 @@
   "url": "",
   "library": "src/dice.js",
   "less": [
-    "static/style.less"
+    "public/styles/style.less"
   ],
   "languages": "languages",
   "hooks": [
