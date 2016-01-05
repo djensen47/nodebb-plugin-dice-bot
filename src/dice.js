@@ -1,41 +1,36 @@
 var Topics = module.parent.require('./topics');
 var Posts = module.parent.require('./posts');
 var Sockets = module.parent.require('./socket.io');
+var SocketHelpers = module.parent.require('./socket.io/helpers')
+var User = module.parent.require('./user');
 var Meta = module.parent.require('./meta');
 var winston = module.parent.require('winston');
 
-
 var TAG = '[plugins/dice-bot]';
+var BOT_UID = 2;
+var MINUTES = 60 * 1000;
 
 var postReply = function postReply(tid, uid, content) {
-  Posts.create({
-    uid: uid,
-    tid: tid,
-    content: content
-  }, function postsCreateCallback(err, postData) {
-    if (err) {
-      winston.err(TAG + ' error saving dice bot post');
-    } else {
-      winston.debug(TAG + ' success saving dice bot post');
-      var result = {
-        posts: [postData],
-	privileges: { 'topics:reply': true },
-	'reputation:disabled': parseInt(Meta.config['reputation:disabled'], 10) === 1,
-	'downvote:disabled': parseInt(Meta.config['downvote:disabled'], 10) === 1
-      };
-      winston.info(TAG);
-      winston.info(postData);
-      Sockets.in('uid_'+uid).emit('event:new_post', result);
-      //Sockets.server.sockets.emit('event:new_post', result);
-    }
-  });
-/*
   Topics.reply({
     tid: tid,
-    uid: 2,
+    uid: BOT_UID,
     content: content
+  }, function(err, postData) {
+    User.setUserField(BOT_UID, 'lastposttime', Date.now - 2*MINUTES, function setUserFieldCB(err) {
+      if (err) {
+        winston.error(TAG + ' error setting lastposttime on bot user ('+BOT_UID+'): ' + err);
+      } else {
+        var result = {
+          posts: [postData],
+          privileges: { 'topics:reply': true },
+          'reputation:disabled': parseInt(Meta.config['reputation:disabled'], 10) === 1,
+          'downvote:disabled': parseInt(Meta.config['downvote:disabled'], 10) === 1
+        };
+	SocketHelpers.notifyOnlineUsers(parseInt(uid, 10), result);
+        //Sockets.in('uid_'+uid).emit('event:new_post', result);
+      }
+    });
   });
-*/
 };
 
 var Dicebot = {};
@@ -49,7 +44,7 @@ Dicebot.postDice = function(postData, callback) {
     winston.info('[plugins/dice-bot] match!');
     var rand = Math.floor((Math.random() * 6) + 1);
     var content = "Dice bot! Shazbot! " + rand;
-    var uid = 2;
+    var uid = BOT_UID;
     postReply(tid, uid, content);
   }
 };
