@@ -15,37 +15,63 @@ var postReply = function postReply(tid, uid, content) {
     tid: tid,
     uid: BOT_UID,
     content: content
-  }, function(err, postData) {
-    User.setUserField(BOT_UID, 'lastposttime', Date.now - 2*MINUTES, function setUserFieldCB(err) {
-      if (err) {
-        winston.error(TAG + ' error setting lastposttime on bot user ('+BOT_UID+'): ' + err);
-      } else {
-        var result = {
-          posts: [postData],
-          privileges: { 'topics:reply': true },
-          'reputation:disabled': parseInt(Meta.config['reputation:disabled'], 10) === 1,
-          'downvote:disabled': parseInt(Meta.config['downvote:disabled'], 10) === 1
-        };
-	SocketHelpers.notifyOnlineUsers(parseInt(uid, 10), result);
-        //Sockets.in('uid_'+uid).emit('event:new_post', result);
-      }
-    });
+  }, function(replyErr, postData) {
+    if (replyErr) {
+      winston.error(TAG + ' Error replying: ' + replyErr);
+      return;
+    } else {
+      winston.verbose(TAG + ' ' + JSON.stringify(postData));
+      User.setUserField(BOT_UID, 'lastposttime', Date.now - 2*MINUTES, function setUserFieldCB(err) {
+        if (err) {
+          winston.error(TAG + ' error setting lastposttime on bot user ('+BOT_UID+'): ' + err);
+        } else {
+          var result = {
+            posts: [postData],
+            privileges: { 'topics:reply': true },
+            'reputation:disabled': parseInt(Meta.config['reputation:disabled'], 10) === 1,
+            'downvote:disabled': parseInt(Meta.config['downvote:disabled'], 10) === 1
+          };
+  	SocketHelpers.notifyOnlineUsers(parseInt(uid, 10), result);
+          //Sockets.in('uid_'+uid).emit('event:new_post', result);
+        }
+      });
+    }
   });
+};
+
+var rollDice = function rollDice(num, sides, modifier) {
+  var results = [];
+  for (var i = 0; i < num; i++) {
+    results.push( Math.floor(Math.random() * sides + 1) + modifier );
+  }
+
+  return results;
 };
 
 var Dicebot = {};
 
 Dicebot.postDice = function(postData, callback) {
-  winston.debug('[plugins/dice-bot] postDice');
+  winston.verbose('[plugins/dice-bot] postDice');
+  if (postData.uid === BOT_UID) {
+    return;
+  }
   var tid = postData.tid;
-  var content = postData.content;
-  var re = /\[dice (.*)\]/g;
-  if (content && content.match(re)) {
-    winston.info('[plugins/dice-bot] match!');
-    var rand = Math.floor((Math.random() * 6) + 1);
-    var content = "Dice bot! Shazbot! " + rand;
-    var uid = BOT_UID;
-    postReply(tid, uid, content);
+
+  //content without quotes, don't want to roll dice from quoted strings
+  var content = postData.content.replace(/^>.*\n/gm, '');
+  var re = /\[dice( \d*d\d+([-\+]\d+)*([<>]=*\d+)*)+\]+/gm;
+  if (content) {
+    var matches = content.match(re);
+    if (matches) {
+      winston.verbose('[plugins/dice-bot] matches');
+      var content = '';
+      for (var i = 0; i < matches.length; i++) {
+        content = content + matches[i] + '\n';
+      }
+      var rand = Math.floor((Math.random() * 6) + 1);
+      var uid = BOT_UID;
+      postReply(tid, uid, content);
+    }
   }
 };
 
