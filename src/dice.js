@@ -11,6 +11,7 @@ var BOT_UID = 2;
 var MINUTES = 60 * 1000;
 
 var postReply = function postReply(tid, uid, content) {
+  //TODO async.waterfall this
   Topics.reply({
     tid: tid,
     uid: BOT_UID,
@@ -39,12 +40,34 @@ var postReply = function postReply(tid, uid, content) {
   });
 };
 
-var rollDice = function rollDice(num, sides, modifier) {
+var executeDice = function executeDice(diceTags) {
+  winston.verbose(TAG + ' ' + JSON.stringify(diceTags));
+  var dice = [];
+  var results = {};
+  var diceRe = /(\d+)*d(\d+)([-\+]\d+){0,1}(([<>]=*)(\d+))*/;
+  for(var i = 0; i < diceTags.length; i++) {
+    var cmds = diceTags[i].replace(/[\[\]]/g,'').split(' ').slice(1);
+    for(var j = 0; j < cmds.length; j++) {
+      var cmd = cmds[j];
+      var params = cmd.match(diceRe);
+
+      if (!params[1]) params[1] = '1';
+      if (!params[3]) params[3] = '0';
+      var num = parseInt(params[1]);
+      var sides = parseInt(params[2]);
+      var modifier = parseInt(params[3]);
+
+      results[cmd] = roll(num, sides, modifier);
+    }
+  }
+  return results;
+}
+
+var roll = function roll(num, sides, modifier) {
   var results = [];
   for (var i = 0; i < num; i++) {
     results.push( Math.floor(Math.random() * sides + 1) + modifier );
   }
-
   return results;
 };
 
@@ -60,15 +83,17 @@ Dicebot.postDice = function(postData, callback) {
   //content without quotes, don't want to roll dice from quoted strings
   var content = postData.content.replace(/^>.*\n/gm, '');
   var re = /\[dice( \d*d\d+([-\+]\d+)*([<>]=*\d+)*)+\]+/gm;
+  var diceRe = /\[dice (\d)*d(\d+)([-\+]\d+){0,1}(([<>]=*)(\d+))*\]/;
   if (content) {
     var matches = content.match(re);
     if (matches) {
       winston.verbose('[plugins/dice-bot] matches');
+      var results = executeDice(matches);
       var content = '';
-      for (var i = 0; i < matches.length; i++) {
-        content = content + matches[i] + '\n';
+      winston.verbose(TAG + ' ' + JSON.stringify(results));
+      for(var key in results) {
+        content += `**${key}:** ${results[key].join(', ')}\n`;
       }
-      var rand = Math.floor((Math.random() * 6) + 1);
       var uid = BOT_UID;
       postReply(tid, uid, content);
     }
