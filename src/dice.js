@@ -73,8 +73,11 @@ var roll = function roll(num, sides, modifier) {
 
 var Dicebot = {};
 
-Dicebot.postDice = function(postData, callback) {
+Dicebot.postDice = function(payload, callback) {
   winston.verbose('[plugins/dice-bot] postDice');
+
+  var postData = payload.post;
+
   if (postData.uid === BOT_UID) {
     return;
   }
