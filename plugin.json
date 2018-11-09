@@ -7,8 +7,9 @@
   "less": [
     "public/styles/style.less"
   ],
-  "languages": "languages",
   "hooks": [
+    { "hook": "static:app.load", "method": "init" },
+    { "hook": "filter:admin.header.build", "method": "addAdminNavigation" },
     { "hook": "action:post.save", "method": "postDice" }
   ]
 }

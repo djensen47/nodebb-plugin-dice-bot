@@ -7,7 +7,7 @@ var Meta = module.parent.require('./meta');
 var winston = module.parent.require('winston');
 
 var TAG = '[plugins/dice-bot]';
-var BOT_UID = 2;
+var BOT_UID = 12390;
 var MINUTES = 60 * 1000;
 
 var postReply = function postReply(tid, uid, content) {
@@ -71,19 +71,56 @@ var roll = function roll(num, sides, modifier) {
   return results;
 };
 
-var Dicebot = {};
+var Dicebot = {
+  _settings: {}
+};
 
-Dicebot.postDice = function(postData, callback) {
-  winston.verbose('[plugins/dice-bot] postDice');
-  if (postData.uid === BOT_UID) {
+Dicebot.init = function(data, callback) {
+  winston.verbose(TAG + ' init'); 
+  var hostMiddleware = module.parent.require('./middleware');
+  var controllers = require('./controllers');
+
+  data.router.get('/admin/plugins/dice-bot', hostMiddleware.admin.buildHeader, controllers.renderAdminPage);
+  data.router.get('/api/admin/plugins/dice-bot', controllers.renderAdminPage);
+
+  // Retrieve settings
+    Meta.settings.get('dice-bot', function (err, settings) {
+    Object.assign(Dicebot._settings, settings);
+    callback();
+  });	
+};
+
+Dicebot.addAdminNavigation = function (header, callback) {
+  winston.verbose(TAG + ' addAdminnavigation'); 
+  header.plugins.push({
+    route: '/plugins/dice-bot',
+    name: 'Dice Bot'
+  });
+
+  callback(null, header);
+};
+
+Dicebot.postDice = function(data) {
+  winston.verbose('[plugins/dice-bot] postDice: ' + JSON.stringify(data.post));
+
+
+  if (data.post.uid === BOT_UID) {
+  	winston.verbose('[plugins/dice-bot] bot');
     return;
+  } else {
+  	winston.verbose('[plugins/dice-bot] not bot');
   }
-  var tid = postData.tid;
+  var tid = data.post.tid;
 
   //content without quotes, don't want to roll dice from quoted strings
-  var content = postData.content.replace(/^>.*\n/gm, '');
+  var content = data.post.content.replace(/^>.*\n/gm, '');
+  winston.verbose(TAG + ' content'); 
   var re = /\[dice( \d*d\d+([-\+]\d+)*([<>]=*\d+)*)+\]+/gm;
+  winston.verbose(TAG + ' re'); 
   var diceRe = /\[dice (\d)*d(\d+)([-\+]\d+){0,1}(([<>]=*)(\d+))*\]/;
+  winston.verbose(TAG + ' diceRe'); 
+
+  winston.verbose('[plugins/dice-bot] content: ' + content);
   if (content) {
     var matches = content.match(re);
     if (matches) {
@@ -96,7 +133,9 @@ Dicebot.postDice = function(postData, callback) {
       }
       var uid = BOT_UID;
       postReply(tid, uid, content);
-    }
+    } else {
+      winston.verbose(TAG + ' no match');
+		}
   }
 };
 
