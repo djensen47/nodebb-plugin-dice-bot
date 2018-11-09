@@ -4,6 +4,9 @@
   "Description": "NodeBB Plugin that allows users to roll dice. Dice results are posted as a reply in the topic from a specific, predetermined account.",
   "url": "",
   "library": "src/dice.js",
+  "acpScripts": [
+    "static/admin.js"
+  ],
   "less": [
     "public/styles/style.less"
   ],
@@ -11,5 +14,6 @@
     { "hook": "static:app.load", "method": "init" },
     { "hook": "filter:admin.header.build", "method": "addAdminNavigation" },
     { "hook": "action:post.save", "method": "postDice" }
-  ]
+  ],
+  "templates": "templates"
 }
