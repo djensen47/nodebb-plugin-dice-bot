@@ -1,10 +1,10 @@
 <form role="form" class="dice-bot-settings">
-Dice Bot
+Dice Bot Settings
 	<div class="row">
 		<div class="col-sm-4 col-xs-12">
 			<div class="form-group">
         <label>Bot UID</label>
-        <input id="diceBotUid" type="text" class="form-control">
+        <input id="diceBotUid" name="diceBotUid" type="text" class="form-control">
 			</div>
 		</div>
 	</div>

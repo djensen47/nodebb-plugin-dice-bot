@@ -11,10 +11,12 @@ var BOT_UID = 12390;
 var MINUTES = 60 * 1000;
 
 var postReply = function postReply(tid, uid, content) {
+  var uid = Dicebot._settings.diceBotUid;
+  winston.verbose(TAG + ' uid: ' + uid);
   //TODO async.waterfall this
   Topics.reply({
     tid: tid,
-    uid: BOT_UID,
+    uid: uid,
     content: content
   }, function(replyErr, postData) {
     if (replyErr) {
@@ -104,7 +106,9 @@ Dicebot.postDice = function(data) {
   winston.verbose('[plugins/dice-bot] postDice: ' + JSON.stringify(data.post));
 
 
-  if (data.post.uid === BOT_UID) {
+  var uid = Dicebot._settings.diceBotUid;
+  winston.verbose(TAG + ' uid = ' +uid);
+  if (data.post.uid === uid) {
   	winston.verbose('[plugins/dice-bot] bot');
     return;
   } else {
