@@ -2,7 +2,6 @@
   "id": "nodebb-plugin-dice-bot",
   "name": "Dice",
   "Description": "NodeBB Plugin that allows users to roll dice. Dice results are posted as a reply in the topic from a specific, predetermined account.",
-  "url": "",
   "library": "src/dice.js",
   "acpScripts": [
     "static/admin.js"
