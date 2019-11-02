@@ -38,7 +38,7 @@ var postReply = function postReply(tid, uid, content) {
 };
 
 var executeDice = function executeDice(diceTags) {
-  var results = {};
+  var results = [];
   var diceRe = /(\d+)*d(\d+)([-\+]\d+){0,1}(([<>]=*)(\d+))*/;
 
   for(var i = 0; i < diceTags.length; i++) {
@@ -53,7 +53,8 @@ var executeDice = function executeDice(diceTags) {
       var sides = parseInt(params[2]);
       var modifier = parseInt(params[3]);
 
-      results[cmd] = roll(num, sides, modifier);
+      var result = { cmd: cmd, roll: roll(num, sides, modifier)};
+      results.push(result);
     }
   }
   return results;
@@ -113,8 +114,8 @@ Dicebot.postDice = function(data) {
     if (matches) {
       var results = executeDice(matches);
       var content = '';
-      for(var key in results) {
-        content += `**${key}:** ${results[key].join(', ')}\n`;
+      for(var result of results) {
+        content += `**${result.cmd}:** ${result.roll.join(', ')}\n`;
       }
       postReply(tid, uid, content);
     }
