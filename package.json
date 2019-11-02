@@ -1,6 +1,6 @@
 {
   "name": "nodebb-plugin-dice-bot",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "repository": {
     "type": "git",
     "url": "https://github.com/djensen47/nodebb-plugin-dice-bot.git"
