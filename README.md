@@ -16,6 +16,12 @@ Anywhere in a post type something like the following:
 [dice 1d6]
 ```
 
+or with a modifier
+
+```
+[dice 1d6+2]
+```
+
 You can also roll mulitple types of dice
 
 ```
