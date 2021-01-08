@@ -73,7 +73,7 @@ var Dicebot = {
 };
 
 Dicebot.init = function(data, callback) {
-  var hostMiddleware = module.parent.require('./middleware');
+  var hostMiddleware = require.main.require('./src/middleware');
   var controllers = require('./controllers');
 
   data.router.get('/admin/plugins/dice-bot', hostMiddleware.admin.buildHeader, controllers.renderAdminPage);
