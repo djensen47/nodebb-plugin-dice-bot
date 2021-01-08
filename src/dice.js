@@ -8,8 +8,7 @@ var TAG = '[plugins/dice-bot]';
 var MINUTES = 60 * 1000;
 
 var postReply = function postReply(tid, uid, content) {
-  // var uid = Dicebot._settings.diceBotUid;
-  winston.info(TAG + ' dicebot uid: ' + uid);
+  //winston.info(TAG + ' dicebot uid: ' + uid);
   //TODO async.waterfall this
   Topics.reply({
     tid: tid,
@@ -39,7 +38,7 @@ var postReply = function postReply(tid, uid, content) {
 
 var executeDice = function executeDice(diceTags) {
   var results = [];
-  var diceRe = /(\d+)*d(\d+)([-\+]\d+){0,1}(([<>]=*)(\d+))*/;
+  var diceRe = /(\d+)*d(\d+)([-\+]\d+){0,1}([<>]=*)*(\d+)*/;
 
   for(var i = 0; i < diceTags.length; i++) {
     var cmds = diceTags[i].replace(/[\[\]]/g,'').split(' ').slice(1);
@@ -52,18 +51,45 @@ var executeDice = function executeDice(diceTags) {
       var num = parseInt(params[1]);
       var sides = parseInt(params[2]);
       var modifier = parseInt(params[3]);
+      var comparison = params[4];
+      var target = parseInt(params[5]);
 
-      var result = { cmd: cmd, roll: roll(num, sides, modifier)};
+      winston.info(`comparison: ${comparison}, target: ${target}`);
+
+      var result = { cmd: cmd, roll: roll(num, sides) };
+
+      if (modifier > 0) {
+        result.sum = modifier + result.roll.reduce((acc, curr) => acc + curr);
+      }
+
+      if (!!comparison && !!target) {
+        winston.info('get some hits!');
+        result.hits = result.roll.reduce((acc, curr) => {
+          switch(comparison) {
+            case '<':
+              return curr < target ? acc + 1 : acc;
+            case '<=':
+              return curr <= target ? acc + 1 : acc;
+            case '>':
+              return curr > target ? acc + 1 : acc;
+            case '>=':
+              return curr >= target ? acc + 1 : acc;
+            default:
+              return acc;
+          }
+        }, 0);
+      }
+
       results.push(result);
     }
   }
   return results;
 }
 
-var roll = function roll(num, sides, modifier) {
+var roll = function roll(num, sides) {
   var results = [];
   for (var i = 0; i < num; i++) {
-    results.push( Math.floor(Math.random() * sides + 1) + modifier );
+    results.push( Math.floor(Math.random() * sides + 1) );
   }
   return results;
 };
@@ -73,7 +99,7 @@ var Dicebot = {
 };
 
 Dicebot.init = function(data, callback) {
-  var hostMiddleware = module.parent.require('./middleware');
+  var hostMiddleware = require.main.require('./src/middleware');
   var controllers = require('./controllers');
 
   data.router.get('/admin/plugins/dice-bot', hostMiddleware.admin.buildHeader, controllers.renderAdminPage);
@@ -115,7 +141,14 @@ Dicebot.postDice = function(data) {
       var results = executeDice(matches);
       var content = '';
       for(var result of results) {
-        content += `**${result.cmd}:** ${result.roll.join(', ')}\n`;
+        content += `**${result.cmd}:** ${result.roll.join(', ')}`;
+        if (result.sum !== undefined) {
+          content += `; **Sum:** ${result.sum}`;
+        }
+        if (result.hits !== undefined) {
+          content += `; **Hits:** ${result.hits}`;
+        }
+        content += '\n';
       }
       postReply(tid, uid, content);
     }
