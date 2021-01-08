@@ -53,17 +53,20 @@ var executeDice = function executeDice(diceTags) {
       var sides = parseInt(params[2]);
       var modifier = parseInt(params[3]);
 
-      var result = { cmd: cmd, roll: roll(num, sides, modifier)};
+      var result = { cmd: cmd, roll: roll(num, sides) };
+      if (modifier > 0) {
+        result.sum = modifier + result.roll.reduce((acc, curr) => acc + curr);
+      }
       results.push(result);
     }
   }
   return results;
 }
 
-var roll = function roll(num, sides, modifier) {
+var roll = function roll(num, sides) {
   var results = [];
   for (var i = 0; i < num; i++) {
-    results.push( Math.floor(Math.random() * sides + 1) + modifier );
+    results.push( Math.floor(Math.random() * sides + 1) );
   }
   return results;
 };
@@ -115,7 +118,11 @@ Dicebot.postDice = function(data) {
       var results = executeDice(matches);
       var content = '';
       for(var result of results) {
-        content += `**${result.cmd}:** ${result.roll.join(', ')}\n`;
+        content += `**${result.cmd}:** ${result.roll.join(', ')}`;
+        if (result.sum !== undefined) {
+          content += `; **Sum:** ${result.sum}`;
+        }
+        content += '\n';
       }
       postReply(tid, uid, content);
     }
