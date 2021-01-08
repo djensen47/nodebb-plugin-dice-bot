@@ -16,10 +16,11 @@ Anywhere in a post type something like the following:
 [dice 1d6]
 ```
 
-or with a modifier
+or with a modifier, which also returns a sum
 
 ```
 [dice 1d6+2]
+[dice 1d6+0]
 ```
 
 You can also roll mulitple types of dice
