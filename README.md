@@ -23,6 +23,15 @@ or with a modifier, which also returns a sum
 [dice 1d6+0]
 ```
 
+or with less than or greater than it counts the number of hits for the rolls (not with modifiers)
+
+```
+[dice 10d6<=3]
+[dice 10d6<3]
+[dice 10d6>=3]
+[dice 10d6>3]
+```
+
 You can also roll mulitple types of dice
 
 ```
